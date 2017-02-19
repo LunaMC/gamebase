@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>luna-gamebase-parent</artifactId>
+        <groupId>io.lunamc.gamebase</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>luna-gamebase-api</artifactId>
+    <name>LunaMC GameBase API</name>
+    <description>GameBase API for basic features of Minecraft on LunaMC.</description>
+    <inceptionYear>2017</inceptionYear>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.lunamc.common</groupId>
+            <artifactId>luna-common-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>

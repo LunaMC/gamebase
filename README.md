@@ -1,0 +1,1 @@
+# LunaMC GameBase [![Build Status](https://travis-ci.org/LunaMC/gamebase.svg?branch=master)](https://travis-ci.org/LunaMC/gamebase)
