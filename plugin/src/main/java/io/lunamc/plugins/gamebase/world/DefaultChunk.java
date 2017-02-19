@@ -27,17 +27,15 @@ public class DefaultChunk implements Chunk {
     private static final String DEFAULT_MATERIAL = "minecraft:air";
     // 5 bytes for packet id, 8 byte for location, 5 bytes for block id
     private static final int PACKET_SIZE_BLOCK_CHANGE = 5 + 8 + 5;
-    private static final int CHUNK_SECTIONS = 16;
-    private static final int MAX_CHUNK_HEIGHT = CHUNK_DIMENSION * CHUNK_SECTIONS;
     private static final int ALL_CHUNKS_BITMASK = IntMath.pow(2, CHUNK_SECTIONS) - 1;
-    private static final int BLOCKS_PER_CHUNK = IntMath.pow(CHUNK_DIMENSION, 3);
-    private static final int LIGHTING_BYTES = BLOCKS_PER_CHUNK / 2;
 
     private final StampedLock lock = new StampedLock();
     private final TShortShortMap data = new TShortShortHashMap(20_000);
     private final ChunkSection[] chunkSections = new ChunkSection[CHUNK_SECTIONS];
     private final short[] blocksCounter = new short[CHUNK_SECTIONS];
     private final Set<NettyConnection> subscribers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final HalfByteChunkStorage blockLight = new HalfByteChunkStorage();
+    private final HalfByteChunkStorage skyLight;
     private final World world;
     private final int chunkX;
     private final int chunkZ;
@@ -46,6 +44,11 @@ public class DefaultChunk implements Chunk {
         this.world = Objects.requireNonNull(world, "world must not be null");
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
+
+        blockLight.fill(0b1111);
+        skyLight = world.getWorldType().supportsSkyLight() ? new HalfByteChunkStorage() : null;
+        if (skyLight != null)
+            skyLight.fill(0b1111);
     }
 
     @Override
@@ -152,6 +155,78 @@ public class DefaultChunk implements Chunk {
     }
 
     @Override
+    public byte getBlockLightInChunk(int x, int y, int z) {
+        if (x < 0 || x >= CHUNK_DIMENSION)
+            throw new IllegalArgumentException("x must be greater or equals 0 and smaller than " + CHUNK_DIMENSION);
+        if (y < 0 || y >= MAX_CHUNK_HEIGHT)
+            throw new IllegalArgumentException("y must be greater or equals 0 and smaller than " + MAX_CHUNK_HEIGHT);
+        if (z < 0 || z >= CHUNK_DIMENSION)
+            throw new IllegalArgumentException("z must be greater or equals 0 and smaller than " + CHUNK_DIMENSION);
+
+        long stamp = lock.readLock();
+        try {
+            return blockLight.get(x, y, z);
+        } finally {
+            lock.unlockRead(stamp);
+        }
+    }
+
+    @Override
+    public void setBlockLightInChunk(int x, int y, int z, byte light) {
+        if (x < 0 || x >= CHUNK_DIMENSION)
+            throw new IllegalArgumentException("x must be greater or equals 0 and smaller than " + CHUNK_DIMENSION);
+        if (y < 0 || y >= MAX_CHUNK_HEIGHT)
+            throw new IllegalArgumentException("y must be greater or equals 0 and smaller than " + MAX_CHUNK_HEIGHT);
+        if (z < 0 || z >= CHUNK_DIMENSION)
+            throw new IllegalArgumentException("z must be greater or equals 0 and smaller than " + CHUNK_DIMENSION);
+
+        long stamp = lock.writeLock();
+        try {
+            blockLight.set(x, y, z, light);
+        } finally {
+            lock.unlockWrite(stamp);
+        }
+    }
+
+    @Override
+    public byte getSkyLightInChunk(int x, int y, int z) {
+        if (skyLight == null)
+            throw new IllegalStateException("Sky light not supported");
+        if (x < 0 || x >= CHUNK_DIMENSION)
+            throw new IllegalArgumentException("x must be greater or equals 0 and smaller than " + CHUNK_DIMENSION);
+        if (y < 0 || y >= MAX_CHUNK_HEIGHT)
+            throw new IllegalArgumentException("y must be greater or equals 0 and smaller than " + MAX_CHUNK_HEIGHT);
+        if (z < 0 || z >= CHUNK_DIMENSION)
+            throw new IllegalArgumentException("z must be greater or equals 0 and smaller than " + CHUNK_DIMENSION);
+
+        long stamp = lock.readLock();
+        try {
+            return skyLight.get(x, y, z);
+        } finally {
+            lock.unlockRead(stamp);
+        }
+    }
+
+    @Override
+    public void setSkyLightInChunk(int x, int y, int z, byte light) {
+        if (skyLight == null)
+            throw new IllegalStateException("Sky light not supported");
+        if (x < 0 || x >= CHUNK_DIMENSION)
+            throw new IllegalArgumentException("x must be greater or equals 0 and smaller than " + CHUNK_DIMENSION);
+        if (y < 0 || y >= MAX_CHUNK_HEIGHT)
+            throw new IllegalArgumentException("y must be greater or equals 0 and smaller than " + MAX_CHUNK_HEIGHT);
+        if (z < 0 || z >= CHUNK_DIMENSION)
+            throw new IllegalArgumentException("z must be greater or equals 0 and smaller than " + CHUNK_DIMENSION);
+
+        long stamp = lock.writeLock();
+        try {
+            skyLight.set(x, y, z, light);
+        } finally {
+            lock.unlockWrite(stamp);
+        }
+    }
+
+    @Override
     public void subscribe(Connection connection) {
         if (!(connection instanceof NettyConnection))
             throw new IllegalArgumentException("connect must be an instance of " + NettyConnection.class.getName());
@@ -225,13 +300,11 @@ public class DefaultChunk implements Chunk {
                     chunkSectionData.writeLong(l);
 
                 // Write block light
-                // ToDo: Implement lightning
-                chunkSectionData.writeBytes(new byte[LIGHTING_BYTES]);
+                chunkSectionData.writeBytes(blockLight.array());
 
-                if (getWorld().getWorldType().supportsSkyLight()) {
+                if (skyLight != null) {
                     // Write sky light
-                    // ToDo: Implement sky lightning
-                    chunkSectionData.writeBytes(new byte[LIGHTING_BYTES]);
+                    chunkSectionData.writeBytes(skyLight.array());
                 }
             }
 
