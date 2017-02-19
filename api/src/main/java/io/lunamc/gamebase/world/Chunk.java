@@ -17,6 +17,10 @@ public interface Chunk {
 
     void setBlockInChunk(int x, int y, int z, Block block);
 
+    byte getSkyLightInChunk(int x, int y, int z);
+
+    void setSkyLightInChunk(int x, int y, int z, byte light);
+
     void subscribe(Connection connection);
 
     void unsubscribe(Connection connection);

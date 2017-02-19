@@ -278,8 +278,8 @@ public class DefaultChunk implements Chunk {
     }
 
     private static short createKey(int x, int y, int z) {
-        // bits: yyyyyyyyxxxxzzzz
-        return (short) (((y & 0b11111111) << 8) | ((x & 0b1111) << 4) | (z & 0b1111));
+        // bits: yyyyyyyyzzzzxxxx
+        return (short) (((y & 0b11111111) << 8) | ((z & 0b1111) << 4) | (x & 0b1111));
     }
 
     private static class ChunkSection {
