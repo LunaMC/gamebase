@@ -31,7 +31,7 @@ public class DefaultPlayHandlerFactory implements PlayHandlerFactory {
                 Chunk chunk = exampleWorld.requireChunk(chunkX, chunkZ);
                 for (int x = 0; x < Chunk.CHUNK_DIMENSION; x++) {
                     for (int z = 0; z < Chunk.CHUNK_DIMENSION; z++)
-                        chunk.setBlockInChunk(x, 0, z, block);
+                        chunk.setBlockInChunk(x, 64, z, block);
                 }
             }
         }
@@ -92,7 +92,7 @@ public class DefaultPlayHandlerFactory implements PlayHandlerFactory {
         // Write packet id for spawn position (0x43)
         ProtocolUtils.writeVarInt(out, 0x43);
         // Write Location
-        out.writeLong(((8L & 0x3FFFFFF) << 38) | ((5L & 0xFFF) << 26) | (8L & 0x3FFFFFF));
+        out.writeLong(((8L & 0x3FFFFFF) << 38) | ((68L & 0xFFF) << 26) | (8L & 0x3FFFFFF));
         ctx.writeAndFlush(out);
     }
 
@@ -117,7 +117,7 @@ public class DefaultPlayHandlerFactory implements PlayHandlerFactory {
         // Write x
         out.writeDouble(8);
         // Write y
-        out.writeDouble(5);
+        out.writeDouble(68);
         // Write z
         out.writeDouble(8);
         // Write yaw
