@@ -24,7 +24,7 @@ public class HalfByteChunkStorage {
 
     public byte get(int x, int y, int z) {
         int index = createKey(x, y, z);
-        return (byte) (index % 2 == 0 ? storage[index] & 0b00001111 : storage[index] >>> 4);
+        return (byte) (index % 2 == 0 ? storage[index] & 0b00001111 : (storage[index] >> 4) & 0b1111);
     }
 
     public void set(int x, int y, int z, byte value) {
@@ -35,7 +35,7 @@ public class HalfByteChunkStorage {
         if (index % 2 == 0)
             storage[index] = (byte) ((storage[index] & 0b11110000) | (value & 0b00001111));
         else
-            storage[index] = (byte) ((storage[index] & 0b00001111) | (value & 0b11110000));
+            storage[index] = (byte) ((storage[index] & 0b00001111) | (value << 4));
     }
 
     public byte[] array() {
@@ -43,7 +43,7 @@ public class HalfByteChunkStorage {
     }
 
     public void fill(int value) {
-        value = (value << 4) & value;
+        value = (value << 4) | value;
         for (int i = 0; i < storage.length; i++)
             storage[i] = (byte) value;
     }
