@@ -1,6 +1,5 @@
 package io.lunamc.plugins.gamebase.world;
 
-import com.google.common.math.IntMath;
 import gnu.trove.map.TShortShortMap;
 import gnu.trove.map.hash.TShortShortHashMap;
 import io.lunamc.common.network.Connection;
@@ -27,7 +26,6 @@ public class DefaultChunk implements Chunk {
     private static final String DEFAULT_MATERIAL = "minecraft:air";
     // 5 bytes for packet id, 8 byte for location, 5 bytes for block id
     private static final int PACKET_SIZE_BLOCK_CHANGE = 5 + 8 + 5;
-    private static final int ALL_CHUNKS_BITMASK = IntMath.pow(2, CHUNK_SECTIONS) - 1;
 
     private final StampedLock lock = new StampedLock();
     private final TShortShortMap data = new TShortShortHashMap(20_000);
@@ -40,6 +38,7 @@ public class DefaultChunk implements Chunk {
     private final World world;
     private final int chunkX;
     private final int chunkZ;
+    private int primaryBitMask = 0;
 
     public DefaultChunk(World world, int chunkX, int chunkZ) {
         this.world = Objects.requireNonNull(world, "world must not be null");
@@ -121,19 +120,14 @@ public class DefaultChunk implements Chunk {
                         if (data.containsKey(key)) {
                             data.remove(key);
                             int count = --blocksCounter[chunkSectionIndex];
-                            if (--blocksCounter[chunkSectionIndex] <= 0) {
-                                chunkSections[chunkSectionIndex] = null;
-                                if (count < 0)
-                                    blocksCounter[chunkSectionIndex] = 0;
-                            }
+                            if (count <= 0)
+                                removeChunkSection(chunkSectionIndex);
                             changed = true;
                         }
                     } else {
                         ChunkSection chunkSection = chunkSections[chunkSectionIndex];
-                        if (chunkSection == null) {
-                            chunkSection = new ChunkSection();
-                            chunkSections[chunkSectionIndex] = chunkSection;
-                        }
+                        if (chunkSection == null)
+                            chunkSection = createChunkSection(chunkSectionIndex);
 
                         short index = chunkSection.getIndex(block);
                         short previous = data.put(key, index);
@@ -256,18 +250,19 @@ public class DefaultChunk implements Chunk {
         // Write ground-up continuous
         // ToDo: Check when ground-up continuous should be false. Maybe for light updates?
         output.writeBoolean(true);
-        // Write primary bit mask
-        // ToDo: Don't write air-only chunks
-        ProtocolUtils.writeVarInt(output, ALL_CHUNKS_BITMASK);
 
         ByteBuf chunkSectionData = channel.alloc().buffer();
         long stamp = lock.readLock();
         try {
-            for (int chunkSectionIndex = 0; chunkSectionIndex < chunkSections.length; chunkSectionIndex++) {
-                ChunkSection chunkSection = chunkSections[chunkSectionIndex];
-                if (chunkSection == null)
-                    chunkSection = ChunkSection.EMPTY_CHUNK_SECTION;
+            // Write primary bit mask
+            ProtocolUtils.writeVarInt(output, primaryBitMask);
 
+            for (int chunkSectionIndex = 0; chunkSectionIndex < chunkSections.length; chunkSectionIndex++) {
+                int currentBitMask = 1 << chunkSectionIndex;
+                if ((primaryBitMask & currentBitMask) != currentBitMask)
+                    continue;
+
+                ChunkSection chunkSection = chunkSections[chunkSectionIndex];
                 int bitsPerBlock = chunkSection.getBitsPerBlock();
 
                 // Write bits per block
@@ -331,6 +326,19 @@ public class DefaultChunk implements Chunk {
         return getClass().getName() + "{chunkX=" + getChunkX() + ", chunkZ=" + getChunkZ() + '}';
     }
 
+    protected ChunkSection createChunkSection(int chunkSectionIndex) {
+        ChunkSection chunkSection = new ChunkSection();
+        chunkSections[chunkSectionIndex] = chunkSection;
+        primaryBitMask |= 1 << chunkSectionIndex;
+        return chunkSection;
+    }
+
+    protected void removeChunkSection(int chunkSectionIndex) {
+        chunkSections[chunkSectionIndex] = null;
+        primaryBitMask &= ~(1 << chunkSectionIndex);
+        blocksCounter[chunkSectionIndex] = 0;
+    }
+
     private void writeRelativeBlockChange(int x, int y, int z, int value) {
         long position = (((x + (chunkX * CHUNK_DIMENSION)) & 0x3FFFFFFL) << 38) |
                 ((y & 0xFFF) << 26) |
@@ -359,8 +367,6 @@ public class DefaultChunk implements Chunk {
     }
 
     private static class ChunkSection {
-
-        private static final ChunkSection EMPTY_CHUNK_SECTION = new ChunkSection();
 
         private final List<Block> palette = new ArrayList<>();
         private int bitsPerBlock = 4;
