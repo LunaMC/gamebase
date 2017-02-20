@@ -36,6 +36,7 @@ public class DefaultChunk implements Chunk {
     private final Set<NettyConnection> subscribers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final HalfByteChunkStorage blockLight = new HalfByteChunkStorage();
     private final HalfByteChunkStorage skyLight;
+    private final byte[] biomes = new byte[CHUNK_DIMENSION * CHUNK_DIMENSION];
     private final World world;
     private final int chunkX;
     private final int chunkZ;
@@ -45,7 +46,7 @@ public class DefaultChunk implements Chunk {
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
 
-        blockLight.fill(0b1111);
+        //blockLight.fill(0b1111);
         skyLight = world.getWorldType().supportsSkyLight() ? new HalfByteChunkStorage() : null;
         if (skyLight != null)
             skyLight.fill(0b1111);
@@ -307,6 +308,8 @@ public class DefaultChunk implements Chunk {
                     chunkSectionData.writeBytes(skyLight.array());
                 }
             }
+            // Write biomes
+            chunkSectionData.writeBytes(biomes);
 
             // Write length of chunk data
             ProtocolUtils.writeVarInt(output, chunkSectionData.readableBytes());
