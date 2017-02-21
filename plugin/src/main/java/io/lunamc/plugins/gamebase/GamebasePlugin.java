@@ -1,14 +1,26 @@
+/*
+ *  Copyright 2017 LunaMC.io
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
 package io.lunamc.plugins.gamebase;
 
-import io.lunamc.common.host.StaticVirtualHost;
-import io.lunamc.common.host.VirtualHostManager;
-import io.lunamc.common.text.builder.ComponentBuilderFactory;
 import io.lunamc.platform.plugin.PluginAdapter;
 import io.lunamc.platform.plugin.PluginContext;
 import io.lunamc.platform.plugin.annotation.LunaPlugin;
 import io.lunamc.platform.plugin.annotation.LunaPluginDependency;
 import io.lunamc.platform.service.ServiceRegistry;
-import io.lunamc.plugins.gamebase.status.ExampleStatusProvider;
 import io.lunamc.plugins.netty.handler.PlayHandlerFactory;
 
 @LunaPlugin(
@@ -28,18 +40,5 @@ public class GamebasePlugin extends PluginAdapter {
 
         ServiceRegistry serviceRegistry = context.getServiceRegistry();
         serviceRegistry.setService(PlayHandlerFactory.class, new DefaultPlayHandlerFactory(game.getBlockRegistry()));
-    }
-
-    @Override
-    public void start(PluginContext context) {
-        ServiceRegistry serviceRegistry = context.getServiceRegistry();
-        VirtualHostManager virtualHostManager = serviceRegistry.getService(VirtualHostManager.class).requireInstance();
-
-        virtualHostManager.setFallbackHost(new StaticVirtualHost(
-                null,
-                new ExampleStatusProvider(serviceRegistry.getService(ComponentBuilderFactory.class)),
-                false,
-                null
-        ));
     }
 }
