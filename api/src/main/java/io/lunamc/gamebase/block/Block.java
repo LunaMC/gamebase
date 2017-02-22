@@ -16,9 +16,16 @@
 
 package io.lunamc.gamebase.block;
 
+import java.util.List;
+
 public interface Block {
 
     String getName();
 
-    int getPaletteId();
+    List<Variant> getVariants();
+
+    interface Variant {
+
+        int getPaletteId();
+    }
 }

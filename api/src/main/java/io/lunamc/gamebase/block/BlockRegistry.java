@@ -20,7 +20,13 @@ import java.util.Optional;
 
 public interface BlockRegistry {
 
-    Optional<Block> getBlockByName(String name);
+    default Optional<Block> getBlockByName(String name) {
+        return getBlockByName(name, 0);
+    }
+
+    Optional<Block> getBlockByName(String name, int variant);
 
     Block register(String name, int paletteId);
+
+    int getGlobalPaletteSize();
 }
