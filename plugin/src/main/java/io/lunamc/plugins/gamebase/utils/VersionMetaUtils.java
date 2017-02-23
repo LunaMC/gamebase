@@ -41,11 +41,16 @@ public class VersionMetaUtils {
     private static final List<MinecraftVersion> VERSIONS;
 
     static {
-        JaxbMinecraftVersions versions;
+        LOGGER.debug("Initializing minecraft version metadata...");
+        JaxbMinecraftVersions versions = null;
         try (InputStream in = VersionMetaUtils.class.getResourceAsStream("/versions.xml")) {
-            JAXBContext jaxbContext = JAXBContext.newInstance(JaxbMinecraftVersions.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            versions = (JaxbMinecraftVersions) unmarshaller.unmarshal(in);
+            if (in != null) {
+                JAXBContext jaxbContext = JAXBContext.newInstance(JaxbMinecraftVersions.class);
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                versions = (JaxbMinecraftVersions) unmarshaller.unmarshal(in);
+            } else {
+                LOGGER.debug("Input stream null");
+            }
         } catch (JAXBException | ClassCastException e) {
             LOGGER.error("Error while unmarshalling version metadata", e);
             versions = null;
@@ -53,11 +58,34 @@ public class VersionMetaUtils {
             LOGGER.error("Error while reading version metadata", e);
             versions = null;
         }
-        VERSIONS = versions != null ? Collections.unmodifiableList(versions.getMinecraftVersions()) : null;
+        if (versions != null) {
+            List<JaxbMinecraftVersion> minecraftVersions = versions.getMinecraftVersions();
+            if (minecraftVersions != null) {
+                VERSIONS = Collections.unmodifiableList(minecraftVersions);
+            } else {
+                LOGGER.debug("minecraftVersions is null");
+                VERSIONS = null;
+            }
+        } else {
+            VERSIONS = null;
+        }
+        if (VERSIONS != null)
+            LOGGER.debug("Finally initialized minecraft version metadata");
+        else
+            LOGGER.warn("Minecraft version metadata not available");
     }
 
     private VersionMetaUtils() {
         throw new UnsupportedOperationException(getClass().getSimpleName() + " is a utility class and should not be constructed");
+    }
+
+    public static boolean initialize() {
+        try {
+            getVersions();
+        } catch (Throwable ignore) {
+            return false;
+        }
+        return true;
     }
 
     public static List<MinecraftVersion> getVersions() {
@@ -114,9 +142,9 @@ public class VersionMetaUtils {
     }
 
     @XmlRootElement(name = "minecraftVersions")
+    @XmlAccessorType(XmlAccessType.FIELD)
     private static class JaxbMinecraftVersions {
 
-        @XmlElementWrapper(name = "minecraftVersions")
         @XmlElement(name = "minecraftVersion")
         private List<JaxbMinecraftVersion> minecraftVersions;
 
@@ -143,7 +171,7 @@ public class VersionMetaUtils {
 
         @Override
         public String getVersionName() {
-            return null;
+            return versionName;
         }
 
         public void setVersionName(String versionName) {
@@ -152,7 +180,7 @@ public class VersionMetaUtils {
 
         @Override
         public VersionType getVersionType() {
-            return null;
+            return versionType;
         }
 
         public void setVersionType(VersionType versionType) {
@@ -161,7 +189,7 @@ public class VersionMetaUtils {
 
         @Override
         public int getProtocolVersion() {
-            return 0;
+            return protocolVersion;
         }
 
         public void setProtocolVersion(int protocolVersion) {

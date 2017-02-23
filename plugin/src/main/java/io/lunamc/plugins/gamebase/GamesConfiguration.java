@@ -46,6 +46,9 @@ public class GamesConfiguration {
         @XmlElement(name = "virtualHost", namespace = "http://lunamc.io/game/1.0")
         private List<String> virtualHosts;
 
+        @XmlElement(name = "statusProvider", namespace = "http://lunamc.io/game/1.0")
+        private StatusProvider statusProvider;
+
         @XmlElementWrapper(name = "blocks", namespace = "http://lunamc.io/game/1.0")
         @XmlElement(name = "block", namespace = "http://lunamc.io/game/1.0")
         private List<Block> blocks;
@@ -58,6 +61,14 @@ public class GamesConfiguration {
             this.virtualHosts = virtualHosts;
         }
 
+        public StatusProvider getStatusProvider() {
+            return statusProvider;
+        }
+
+        public void setStatusProvider(StatusProvider statusProvider) {
+            this.statusProvider = statusProvider;
+        }
+
         public List<Block> getBlocks() {
             return blocks;
         }
@@ -67,13 +78,40 @@ public class GamesConfiguration {
         }
     }
 
+    @XmlAccessorType(XmlAccessType.FIELD)
+    public static class StatusProvider {
+
+        @XmlElement(name = "motd", namespace = "http://lunamc.io/game/1.0")
+        private String motd;
+
+        @XmlElement(name = "maxPlayers", namespace = "http://lunamc.io/game/1.0")
+        private int maxPlayers;
+
+        public String getMotd() {
+            return motd;
+        }
+
+        public void setMotd(String motd) {
+            this.motd = motd;
+        }
+
+        public int getMaxPlayers() {
+            return maxPlayers;
+        }
+
+        public void setMaxPlayers(int maxPlayers) {
+            this.maxPlayers = maxPlayers;
+        }
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
     public static class Block {
 
         @XmlAttribute(name = "name")
         private String name;
 
         @XmlAttribute(name = "paletteId")
-        private int paletteId;
+        private String paletteId;
 
         public String getName() {
             return name;
@@ -83,11 +121,11 @@ public class GamesConfiguration {
             this.name = name;
         }
 
-        public int getPaletteId() {
+        public String getPaletteId() {
             return paletteId;
         }
 
-        public void setPaletteId(int paletteId) {
+        public void setPaletteId(String paletteId) {
             this.paletteId = paletteId;
         }
     }

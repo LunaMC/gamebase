@@ -14,18 +14,16 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase;
+package io.lunamc.plugins.gamebase.utils;
 
-import io.lunamc.common.host.VirtualHost;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.util.Collection;
-import java.util.Optional;
+public class MinecraftUtilsTest {
 
-public interface GameManager {
-
-    void addGame(Game game);
-
-    Optional<Game> getGameForVirtualHost(VirtualHost virtualHost);
-
-    Collection<? extends Game> getGames();
+    @Test
+    public void testParsePaletteId() {
+        Assert.assertEquals(42 << 4, MinecraftUtils.parsePaletteId("42"));
+        Assert.assertEquals((42 << 4) | 0b1111, MinecraftUtils.parsePaletteId("42:15"));
+    }
 }

@@ -31,6 +31,11 @@ public class DefaultGameManager implements GameManager {
     private final Set<Game> games = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     @Override
+    public void addGame(Game game) {
+        games.add(game);
+    }
+
+    @Override
     public Optional<Game> getGameForVirtualHost(VirtualHost virtualHost) {
         for (Game game : getGames()) {
             if (game.getHandledVirtualHosts().contains(virtualHost))

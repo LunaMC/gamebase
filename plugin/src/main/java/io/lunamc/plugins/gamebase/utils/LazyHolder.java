@@ -14,18 +14,28 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase;
+package io.lunamc.plugins.gamebase.utils;
 
-import io.lunamc.common.host.VirtualHost;
+import java.util.function.Supplier;
 
-import java.util.Collection;
-import java.util.Optional;
+public class LazyHolder<T> {
 
-public interface GameManager {
+    private volatile Supplier<T> supplier;
+    private T value;
 
-    void addGame(Game game);
+    private LazyHolder(Supplier<T> supplier) {
+        this.supplier = supplier;
+    }
 
-    Optional<Game> getGameForVirtualHost(VirtualHost virtualHost);
+    public T getValue() {
+        if (supplier != null) {
+            value = supplier.get();
+            supplier = null;
+        }
+        return value;
+    }
 
-    Collection<? extends Game> getGames();
+    public static <T> LazyHolder<T> create(Supplier<T> supplier) {
+        return new LazyHolder<>(supplier);
+    }
 }

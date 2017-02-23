@@ -14,18 +14,21 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase;
+package io.lunamc.plugins.gamebase.utils;
 
-import io.lunamc.common.host.VirtualHost;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import java.util.Collection;
-import java.util.Optional;
+public class VersionMetaUtilsTest {
 
-public interface GameManager {
+    @BeforeClass
+    public static void prepare() {
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
+    }
 
-    void addGame(Game game);
-
-    Optional<Game> getGameForVirtualHost(VirtualHost virtualHost);
-
-    Collection<? extends Game> getGames();
+    @Test
+    public void testVersionMetaUtils() {
+        Assert.assertTrue(VersionMetaUtils.initialize());
+    }
 }

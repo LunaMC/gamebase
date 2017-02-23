@@ -119,7 +119,7 @@ public class DefaultChunk implements Chunk {
             block = null;
 
         short key = createKey(x, y, z);
-        int value = block != null ? encodeId(block) : 0;
+        int value = block != null ? block.getPaletteId() : 0;
 
         boolean changed = false;
         long stamp = lock.readLock();
@@ -301,7 +301,7 @@ public class DefaultChunk implements Chunk {
                 for (short i = (short) ((chunkSectionIndex * CHUNK_DIMENSION) << 8); i < max; i++) {
                     short reference = data.get(i);
                     if (bitsPerBlock >= 9)
-                        writer.write(encodeId(chunkSection.getBlock(reference)));
+                        writer.write(chunkSection.getBlock(reference).getPaletteId());
                     else
                         writer.write(reference);
                 }
@@ -373,10 +373,6 @@ public class DefaultChunk implements Chunk {
         }
     }
 
-    private static int encodeId(Block block) {
-        return block.getPaletteId() << 4;
-    }
-
     private static short createKey(int x, int y, int z) {
         // bits: yyyyyyyyzzzzxxxx
         return (short) (((y & 0b11111111) << 8) | ((z & 0b1111) << 4) | (x & 0b1111));
@@ -425,7 +421,7 @@ public class DefaultChunk implements Chunk {
             int[] result = new int[palette.size()];
             int i = 0;
             for (Block block : palette)
-                result[i++] = encodeId(block);
+                result[i++] = block.getPaletteId();
             return result;
         }
     }
