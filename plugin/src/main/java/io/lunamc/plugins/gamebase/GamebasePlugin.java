@@ -16,12 +16,12 @@
 
 package io.lunamc.plugins.gamebase;
 
+import io.lunamc.gamebase.GameManager;
 import io.lunamc.platform.plugin.PluginAdapter;
 import io.lunamc.platform.plugin.PluginContext;
 import io.lunamc.platform.plugin.annotation.LunaPlugin;
 import io.lunamc.platform.plugin.annotation.LunaPluginDependency;
 import io.lunamc.platform.service.ServiceRegistry;
-import io.lunamc.plugins.netty.handler.PlayHandlerFactory;
 
 @LunaPlugin(
         id = "luna-gamebase",
@@ -35,10 +35,7 @@ public class GamebasePlugin extends PluginAdapter {
 
     @Override
     public void initialize(PluginContext context) {
-        DefaultGame game = new DefaultGame(MinecraftVersion.VERSION_1_10_2);
-        game.initialize();
-
         ServiceRegistry serviceRegistry = context.getServiceRegistry();
-        serviceRegistry.setService(PlayHandlerFactory.class, new DefaultPlayHandlerFactory(game.getBlockRegistry()));
+        serviceRegistry.setService(GameManager.class, new DefaultGameManager());
     }
 }

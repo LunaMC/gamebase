@@ -16,14 +16,13 @@
 
 package io.lunamc.plugins.gamebase;
 
-import io.lunamc.common.network.AuthorizedConnection;
+import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.block.Block;
-import io.lunamc.gamebase.block.BlockRegistry;
 import io.lunamc.gamebase.world.Chunk;
 import io.lunamc.gamebase.world.World;
 import io.lunamc.plugins.gamebase.world.DefaultWorld;
 import io.lunamc.plugins.gamebase.world.StaticWorldType;
-import io.lunamc.plugins.netty.handler.PlayHandlerFactory;
+import io.lunamc.plugins.netty.network.NettyAuthorizedConnection;
 import io.lunamc.protocol.ChannelHandlerContextUtils;
 import io.lunamc.protocol.ProtocolUtils;
 import io.lunamc.protocol.handler.PacketInboundHandlerAdapter;
@@ -34,14 +33,20 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
-public class DefaultPlayHandlerFactory implements PlayHandlerFactory {
+public class DefaultPlayHandler extends PacketInboundHandlerAdapter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPlayHandlerFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPlayHandler.class);
 
     private final World exampleWorld = new DefaultWorld(new StaticWorldType(true));
+    private final Game game;
+    private final NettyAuthorizedConnection connection;
+    private boolean send;
 
-    public DefaultPlayHandlerFactory(BlockRegistry blockRegistry) {
-        Block block = blockRegistry.getBlockByName("minecraft:stone").orElseThrow(RuntimeException::new);
+    public DefaultPlayHandler(Game game, NettyAuthorizedConnection connection) {
+        this.game = Objects.requireNonNull(game, "game must not be null");
+        this.connection = Objects.requireNonNull(connection, "connection must not be null");
+
+        Block block = game.getBlockRegistry().getBlockByName("minecraft:stone").orElseThrow(RuntimeException::new);
         for (int chunkX = -3; chunkX <= 3; chunkX++) {
             for (int chunkZ = -3; chunkZ <= 3; chunkZ++) {
                 Chunk chunk = exampleWorld.requireChunk(chunkX, chunkZ);
@@ -54,8 +59,53 @@ public class DefaultPlayHandlerFactory implements PlayHandlerFactory {
     }
 
     @Override
-    public ChannelHandler createHandler(AuthorizedConnection connection) {
-        return new ChannelHandler(connection);
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        writeJoinGame(ctx);
+        writeBrand(ctx);
+        writeSpawnPosition(ctx);
+        writePlayerAbilities(ctx);
+    }
+
+    @Override
+    protected void handlePacket(ChannelHandlerContext ctx, int packetId, ByteBuf content) throws Exception {
+        switch (packetId) {
+            case 0x00:
+                // Teleport confirm
+                handleTeleportConfirm(ctx, content);
+                break;
+            case 0x04:
+                // Client settings
+                handleClientSettings(ctx, content);
+                break;
+            case 0x0D:
+                // Player position and look
+                handlePlayerPositionAndLook();
+                break;
+        }
+    }
+
+    private void handleClientSettings(ChannelHandlerContext ctx, ByteBuf content) {
+        String locale = ProtocolUtils.readString(content);
+        byte viewDistance = content.readByte();
+        int chatMode = ProtocolUtils.readVarInt(content);
+        boolean chatColors = content.readBoolean();
+        byte displaySkinParts = content.readByte();
+        int mainHand = ProtocolUtils.readVarInt(content);
+
+        LOGGER.info("Got client settings from {}: {} {} {} {} {} {}", ChannelHandlerContextUtils.client(ctx), locale, viewDistance, chatMode, chatColors, displaySkinParts, mainHand);
+
+        writePlayPositionAndLook(ctx);
+    }
+
+    private void handlePlayerPositionAndLook() {
+        if (!send) {
+            send = true;
+            for (int chunkX = -3; chunkX <= 3; chunkX++) {
+                for (int chunkZ = -3; chunkZ <= 3; chunkZ++) {
+                    exampleWorld.requireChunk(chunkX, chunkZ).sendChunkData(connection);
+                }
+            }
+        }
     }
 
     private static void writeJoinGame(ChannelHandlerContext ctx) {
@@ -150,65 +200,5 @@ public class DefaultPlayHandlerFactory implements PlayHandlerFactory {
     private static void handleTeleportConfirm(ChannelHandlerContext ctx, ByteBuf content) {
         int teleportId = ProtocolUtils.readVarInt(content);
         LOGGER.info("Client {} confirms teleport with teleportId {}", ChannelHandlerContextUtils.client(ctx), teleportId);
-    }
-
-    private class ChannelHandler extends PacketInboundHandlerAdapter {
-
-        private final AuthorizedConnection connection;
-        private boolean send;
-
-        public ChannelHandler(AuthorizedConnection connection) {
-            this.connection = Objects.requireNonNull(connection, "connection must not be null");
-        }
-
-        @Override
-        public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-            writeJoinGame(ctx);
-            writeBrand(ctx);
-            writeSpawnPosition(ctx);
-            writePlayerAbilities(ctx);
-        }
-
-        @Override
-        protected void handlePacket(ChannelHandlerContext ctx, int packetId, ByteBuf content) throws Exception {
-            switch (packetId) {
-                case 0x00:
-                    // Teleport confirm
-                    handleTeleportConfirm(ctx, content);
-                    break;
-                case 0x04:
-                    // Client settings
-                    handleClientSettings(ctx, content);
-                    break;
-                case 0x0D:
-                    // Player position and look
-                    handlePlayerPositionAndLook();
-                    break;
-            }
-        }
-
-        private void handleClientSettings(ChannelHandlerContext ctx, ByteBuf content) {
-            String locale = ProtocolUtils.readString(content);
-            byte viewDistance = content.readByte();
-            int chatMode = ProtocolUtils.readVarInt(content);
-            boolean chatColors = content.readBoolean();
-            byte displaySkinParts = content.readByte();
-            int mainHand = ProtocolUtils.readVarInt(content);
-
-            LOGGER.info("Got client settings from {}: {} {} {} {} {} {}", ChannelHandlerContextUtils.client(ctx), locale, viewDistance, chatMode, chatColors, displaySkinParts, mainHand);
-
-            writePlayPositionAndLook(ctx);
-        }
-
-        private void handlePlayerPositionAndLook() {
-            if (!send) {
-                send = true;
-                for (int chunkX = -3; chunkX <= 3; chunkX++) {
-                    for (int chunkZ = -3; chunkZ <= 3; chunkZ++) {
-                        exampleWorld.requireChunk(chunkX, chunkZ).sendChunkData(connection);
-                    }
-                }
-            }
-        }
     }
 }

@@ -16,9 +16,22 @@
 
 package io.lunamc.gamebase;
 
+import io.lunamc.common.host.VirtualHost;
+import io.lunamc.common.network.AuthorizedConnection;
+import io.lunamc.common.status.StatusProvider;
 import io.lunamc.gamebase.block.BlockRegistry;
+
+import java.util.Collection;
 
 public interface Game {
 
     BlockRegistry getBlockRegistry();
+
+    Collection<AuthorizedConnection> getConnections();
+
+    Collection<VirtualHost> getHandledVirtualHosts();
+
+    StatusProvider getStatusProvider();
+
+    void setStatusProvider(StatusProvider statusProvider);
 }

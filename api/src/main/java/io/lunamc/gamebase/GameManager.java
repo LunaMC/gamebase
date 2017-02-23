@@ -14,11 +14,16 @@
  *    limitations under the License.
  */
 
-package io.lunamc.plugins.gamebase;
+package io.lunamc.gamebase;
 
-public enum MinecraftVersion {
+import io.lunamc.common.host.VirtualHost;
 
-    VERSION_1_10,
-    VERSION_1_10_2,
-    VERSION_1_11_2
+import java.util.Collection;
+import java.util.Optional;
+
+public interface GameManager {
+
+    Optional<Game> getGameForVirtualHost(VirtualHost virtualHost);
+
+    Collection<? extends Game> getGames();
 }

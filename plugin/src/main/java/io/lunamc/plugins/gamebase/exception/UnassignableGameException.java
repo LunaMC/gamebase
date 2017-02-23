@@ -14,11 +14,7 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase.block;
+package io.lunamc.plugins.gamebase.exception;
 
-public interface Block {
-
-    String getName();
-
-    int getPaletteId();
+public class UnassignableGameException extends RuntimeException {
 }
