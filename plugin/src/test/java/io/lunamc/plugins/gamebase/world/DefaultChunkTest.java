@@ -16,6 +16,7 @@
 
 package io.lunamc.plugins.gamebase.world;
 
+import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.block.Block;
 import io.lunamc.gamebase.world.Chunk;
 import io.lunamc.gamebase.world.World;
@@ -95,7 +96,7 @@ public class DefaultChunkTest {
         World world = Mockito.mock(World.class);
         Mockito.when(world.getWorldType()).thenReturn(worldType);
 
-        DefaultChunk chunk = new DefaultChunk(world, 0, 0);
+        DefaultChunk chunk = new DefaultChunk(Mockito.mock(Game.class), world, 0, 0);
         chunk.setBlockInChunk(4, 8, 15, block1);
         chunk.setBlockInChunk(3, 3, 3, block2);
         chunk.setBlockInChunk(7, 7, 7, block3);
