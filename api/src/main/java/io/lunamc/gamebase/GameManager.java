@@ -27,5 +27,5 @@ public interface GameManager {
 
     Optional<Game> getGameForVirtualHost(VirtualHost virtualHost);
 
-    Collection<? extends Game> getGames();
+    Collection<Game> getGames();
 }

@@ -16,19 +16,20 @@
 
 package io.lunamc.plugins.gamebase;
 
-import com.google.common.reflect.Reflection;
 import io.lunamc.common.host.VirtualHost;
 import io.lunamc.common.host.VirtualHostManager;
 import io.lunamc.common.text.builder.ComponentBuilderFactory;
 import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.GameManager;
 import io.lunamc.gamebase.block.BlockRegistry;
+import io.lunamc.gamebase.math.vector.VectorFactory;
 import io.lunamc.platform.plugin.PluginAdapter;
 import io.lunamc.platform.plugin.PluginContext;
 import io.lunamc.platform.plugin.annotation.LunaPlugin;
 import io.lunamc.platform.plugin.annotation.LunaPluginDependency;
 import io.lunamc.platform.service.ServiceRegistration;
 import io.lunamc.platform.service.ServiceRegistry;
+import io.lunamc.plugins.gamebase.math.vector.DefaultVectorFactory;
 import io.lunamc.plugins.gamebase.status.SimpleStatusProvider;
 import io.lunamc.plugins.gamebase.utils.MinecraftUtils;
 import io.lunamc.plugins.gamebase.utils.VersionMetaUtils;
@@ -62,6 +63,7 @@ public class GamebasePlugin extends PluginAdapter {
 
         ServiceRegistry serviceRegistry = context.getServiceRegistry();
         serviceRegistry.setService(GameManager.class, new DefaultGameManager());
+        serviceRegistry.setService(VectorFactory.class, new DefaultVectorFactory());
     }
 
     @Override

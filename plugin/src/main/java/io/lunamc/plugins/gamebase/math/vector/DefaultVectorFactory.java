@@ -14,25 +14,15 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase;
+package io.lunamc.plugins.gamebase.math.vector;
 
-import io.lunamc.common.host.VirtualHost;
-import io.lunamc.common.network.AuthorizedConnection;
-import io.lunamc.common.status.StatusProvider;
-import io.lunamc.gamebase.block.BlockRegistry;
-import io.lunamc.gamebase.entity.Player;
+import io.lunamc.gamebase.math.vector.Vector3f;
+import io.lunamc.gamebase.math.vector.VectorFactory;
 
-import java.util.Collection;
+public class DefaultVectorFactory implements VectorFactory {
 
-public interface Game {
-
-    BlockRegistry getBlockRegistry();
-
-    Collection<Player> getPlayers();
-
-    Collection<VirtualHost> getHandledVirtualHosts();
-
-    StatusProvider getStatusProvider();
-
-    void setStatusProvider(StatusProvider statusProvider);
+    @Override
+    public Vector3f createVector3f(float x, float y, float z) {
+        return new DefaultVector3f(x, y, z);
+    }
 }

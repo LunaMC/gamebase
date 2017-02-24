@@ -14,25 +14,9 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase;
+package io.lunamc.gamebase.entity;
 
-import io.lunamc.common.host.VirtualHost;
-import io.lunamc.common.network.AuthorizedConnection;
-import io.lunamc.common.status.StatusProvider;
-import io.lunamc.gamebase.block.BlockRegistry;
-import io.lunamc.gamebase.entity.Player;
+import io.lunamc.gamebase.world.FuzzyLocated;
 
-import java.util.Collection;
-
-public interface Game {
-
-    BlockRegistry getBlockRegistry();
-
-    Collection<Player> getPlayers();
-
-    Collection<VirtualHost> getHandledVirtualHosts();
-
-    StatusProvider getStatusProvider();
-
-    void setStatusProvider(StatusProvider statusProvider);
+public interface Entity extends FuzzyLocated {
 }

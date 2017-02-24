@@ -14,25 +14,22 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase;
+package io.lunamc.gamebase.world;
 
-import io.lunamc.common.host.VirtualHost;
-import io.lunamc.common.network.AuthorizedConnection;
-import io.lunamc.common.status.StatusProvider;
-import io.lunamc.gamebase.block.BlockRegistry;
-import io.lunamc.gamebase.entity.Player;
+import io.lunamc.gamebase.math.vector.Vector3f;
 
-import java.util.Collection;
+import java.util.Optional;
 
-public interface Game {
+public interface FuzzyLocated {
 
-    BlockRegistry getBlockRegistry();
+    Optional<World> getWorld();
 
-    Collection<Player> getPlayers();
+    Optional<Vector3f> getPosition();
 
-    Collection<VirtualHost> getHandledVirtualHosts();
+    LocationUpdater getLocationUpdater();
 
-    StatusProvider getStatusProvider();
+    interface LocationUpdater {
 
-    void setStatusProvider(StatusProvider statusProvider);
+        void update(World world, Vector3f position);
+    }
 }

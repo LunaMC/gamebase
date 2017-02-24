@@ -20,6 +20,7 @@ import io.lunamc.common.host.VirtualHost;
 import io.lunamc.common.network.AuthorizedConnection;
 import io.lunamc.common.status.StatusProvider;
 import io.lunamc.gamebase.Game;
+import io.lunamc.gamebase.entity.Player;
 import io.lunamc.plugins.gamebase.block.DefaultBlockRegistry;
 
 import java.util.Collection;
@@ -31,8 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DefaultGame implements Game {
 
     private final DefaultBlockRegistry blockRegistry = new DefaultBlockRegistry();
-    private final Set<AuthorizedConnection> connections = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private final Set<AuthorizedConnection> connectionsView = Collections.unmodifiableSet(connections);
+    private final Set<Player> connections = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Set<VirtualHost> handledVirtualHosts = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final AtomicReference<StatusProvider> statusProvider = new AtomicReference<>();
 
@@ -42,16 +42,8 @@ public class DefaultGame implements Game {
     }
 
     @Override
-    public Collection<AuthorizedConnection> getConnections() {
-        return connectionsView;
-    }
-
-    public void addConnection(AuthorizedConnection connection) {
-        connections.add(connection);
-    }
-
-    public void removeConnection(AuthorizedConnection connection) {
-        connections.remove(connection);
+    public Collection<Player> getPlayers() {
+        return connections;
     }
 
     @Override

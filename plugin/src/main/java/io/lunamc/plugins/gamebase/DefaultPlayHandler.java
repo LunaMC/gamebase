@@ -37,14 +37,15 @@ public class DefaultPlayHandler extends PacketInboundHandlerAdapter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPlayHandler.class);
 
-    private final World exampleWorld = new DefaultWorld(new StaticWorldType(true));
     private final Game game;
     private final NettyAuthorizedConnection connection;
+    private final World exampleWorld;
     private boolean send;
 
     public DefaultPlayHandler(Game game, NettyAuthorizedConnection connection) {
         this.game = Objects.requireNonNull(game, "game must not be null");
         this.connection = Objects.requireNonNull(connection, "connection must not be null");
+        this.exampleWorld = new DefaultWorld(game, new StaticWorldType(true));
 
         Block block = game.getBlockRegistry().getBlockByName("minecraft:stone").orElseThrow(RuntimeException::new);
         for (int chunkX = -3; chunkX <= 3; chunkX++) {

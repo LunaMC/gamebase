@@ -20,8 +20,10 @@ import io.lunamc.common.network.AuthorizedConnection;
 import io.lunamc.common.play.PlayConnectionInitializer;
 import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.GameManager;
+import io.lunamc.gamebase.entity.Player;
 import io.lunamc.platform.service.ServiceRegistration;
 import io.lunamc.platform.service.di.PreferredConstructor;
+import io.lunamc.plugins.gamebase.entity.DefaultPlayer;
 import io.lunamc.plugins.gamebase.exception.UnassignableGameException;
 import io.lunamc.plugins.netty.handler.ProtocolLoginHandler;
 import io.lunamc.plugins.netty.network.NettyAuthorizedConnection;
@@ -43,6 +45,8 @@ public class DefaultPlayConnectionInitializer implements PlayConnectionInitializ
             throw new UnsupportedOperationException("connect must be provided by luna-netty plugin");
         Game game = gameManager.requireInstance().getGameForVirtualHost(connection.getVirtualHost()).orElseThrow(UnassignableGameException::new);
         NettyAuthorizedConnection castedConnection = (NettyAuthorizedConnection) connection;
+        Player player = new DefaultPlayer(connection);
+        game.getPlayers().add(player);
         castedConnection.channel().pipeline()
                 .replace(ProtocolLoginHandler.HANDLER_NAME, HANDLER_NAME, new DefaultPlayHandler(game, castedConnection));
     }

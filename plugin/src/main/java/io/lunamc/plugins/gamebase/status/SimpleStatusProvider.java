@@ -62,7 +62,7 @@ public class SimpleStatusProvider implements StatusProvider {
                 ),
                 new StaticStatusResponse.StaticPlayers(
                         maxPlayers,
-                        game.getConnections().size(),
+                        game.getPlayers().size(),
                         Collections.emptyList()
                 ),
                 componentMotd.getValue(),
@@ -77,7 +77,7 @@ public class SimpleStatusProvider implements StatusProvider {
                 connection.getProtocolVersion(),
                 version.map(VersionMetaUtils.MinecraftVersion::getVersionName).orElse("Universal"),
                 motd,
-                game.getConnections().size(),
+                game.getPlayers().size(),
                 maxPlayers
         );
     }
@@ -88,7 +88,7 @@ public class SimpleStatusProvider implements StatusProvider {
                 0,
                 "Universal",
                 motd,
-                game.getConnections().size(),
+                game.getPlayers().size(),
                 maxPlayers
         );
     }
@@ -97,7 +97,7 @@ public class SimpleStatusProvider implements StatusProvider {
     public BetaStatusResponse createBetaStatusResponse(Connection connection) {
         return new StaticBetaStatusResponse(
                 motd,
-                game.getConnections().size(),
+                game.getPlayers().size(),
                 maxPlayers
         );
     }

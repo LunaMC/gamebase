@@ -14,25 +14,17 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase;
+package io.lunamc.gamebase.entity;
 
-import io.lunamc.common.host.VirtualHost;
 import io.lunamc.common.network.AuthorizedConnection;
-import io.lunamc.common.status.StatusProvider;
-import io.lunamc.gamebase.block.BlockRegistry;
-import io.lunamc.gamebase.entity.Player;
 
-import java.util.Collection;
+import java.util.UUID;
 
-public interface Game {
+public interface Player extends Entity {
 
-    BlockRegistry getBlockRegistry();
+    AuthorizedConnection getConnection();
 
-    Collection<Player> getPlayers();
+    UUID getUniqueID();
 
-    Collection<VirtualHost> getHandledVirtualHosts();
-
-    StatusProvider getStatusProvider();
-
-    void setStatusProvider(StatusProvider statusProvider);
+    String getUsername();
 }
