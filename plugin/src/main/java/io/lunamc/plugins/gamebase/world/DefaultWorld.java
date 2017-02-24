@@ -18,6 +18,7 @@ package io.lunamc.plugins.gamebase.world;
 
 import gnu.trove.map.TLongObjectMap;
 import gnu.trove.map.hash.TLongObjectHashMap;
+import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.world.Chunk;
 import io.lunamc.gamebase.world.World;
 import io.lunamc.gamebase.world.WorldType;
@@ -29,9 +30,11 @@ public class DefaultWorld implements World {
 
     private final StampedLock chunksLock = new StampedLock();
     private final TLongObjectMap<Chunk> chunks = new TLongObjectHashMap<>();
+    private final Game game;
     private final WorldType worldType;
 
-    public DefaultWorld(WorldType worldType) {
+    public DefaultWorld(Game game, WorldType worldType) {
+        this.game = Objects.requireNonNull(game, "game must not be null");
         this.worldType = Objects.requireNonNull(worldType, "worldType must not be null");
     }
 
@@ -53,7 +56,7 @@ public class DefaultWorld implements World {
                         stamp = writeStamp;
                         chunk = chunks.get(key);
                         if (chunk == null) {
-                            chunk = new DefaultChunk(this, chunkX, chunkZ);
+                            chunk = new DefaultChunk(game, this, chunkX, chunkZ);
                             chunks.put(key, chunk);
                         }
                         break;

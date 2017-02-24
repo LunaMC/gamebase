@@ -28,10 +28,10 @@ import java.util.concurrent.locks.StampedLock;
 
 public class DefaultBlockRegistry implements BlockRegistry {
 
-    private static final int MAX_VARIANTS = 0b1111;
+    private static final int MAX_VARIANT = 0b1111;
 
     private final ConcurrentMap<String, BlockRegistration> blocks = new ConcurrentHashMap<>();
-    private int globalPaletteSize;
+    private int globalPaletteSize = -1;
 
     public DefaultBlockRegistry() {
         putBlock(DefaultBlock.AIR);
@@ -39,8 +39,8 @@ public class DefaultBlockRegistry implements BlockRegistry {
 
     @Override
     public Optional<Block> getBlockByName(String name, int variant) {
-        if (variant > MAX_VARIANTS)
-            throw new IllegalArgumentException("variant must be between 0 and " + MAX_VARIANTS);
+        if (variant > MAX_VARIANT)
+            throw new IllegalArgumentException("variant must be between 0 and " + MAX_VARIANT);
         BlockRegistration registration = blocks.get(name);
         if (registration == null)
             return Optional.empty();
@@ -55,7 +55,7 @@ public class DefaultBlockRegistry implements BlockRegistry {
     @Override
     public int getGlobalPaletteSize() {
         if (globalPaletteSize < 0)
-            globalPaletteSize = IntMath.log2(blocks.size() * MAX_VARIANTS, RoundingMode.UP);
+            globalPaletteSize = IntMath.log2(blocks.size() * (MAX_VARIANT + 1), RoundingMode.UP);
         return globalPaletteSize;
     }
 
@@ -73,7 +73,7 @@ public class DefaultBlockRegistry implements BlockRegistry {
 
     private static class BlockRegistration {
 
-        private final DefaultBlock[] variants = new DefaultBlock[MAX_VARIANTS];
+        private final DefaultBlock[] variants = new DefaultBlock[MAX_VARIANT];
         private final StampedLock lock = new StampedLock();
 
         public DefaultBlock getVariant(int variant) {

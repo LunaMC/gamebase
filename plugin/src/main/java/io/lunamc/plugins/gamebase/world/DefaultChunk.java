@@ -19,6 +19,7 @@ package io.lunamc.plugins.gamebase.world;
 import gnu.trove.map.TShortShortMap;
 import gnu.trove.map.hash.TShortShortHashMap;
 import io.lunamc.common.network.Connection;
+import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.block.Block;
 import io.lunamc.gamebase.world.Chunk;
 import io.lunamc.gamebase.world.World;
@@ -51,12 +52,14 @@ public class DefaultChunk implements Chunk {
     private final HalfByteChunkStorage blockLight = new HalfByteChunkStorage();
     private final HalfByteChunkStorage skyLight;
     private final byte[] biomes = new byte[CHUNK_DIMENSION * CHUNK_DIMENSION];
+    private final Game game;
     private final World world;
     private final int chunkX;
     private final int chunkZ;
     private int primaryBitMask = 0;
 
-    public DefaultChunk(World world, int chunkX, int chunkZ) {
+    public DefaultChunk(Game game, World world, int chunkX, int chunkZ) {
+        this.game = Objects.requireNonNull(game, "game must not be null");
         this.world = Objects.requireNonNull(world, "world must not be null");
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
@@ -378,7 +381,7 @@ public class DefaultChunk implements Chunk {
         return (short) (((y & 0b11111111) << 8) | ((z & 0b1111) << 4) | (x & 0b1111));
     }
 
-    private static class ChunkSection {
+    private class ChunkSection {
 
         private final List<Block> palette = new ArrayList<>();
         private int bitsPerBlock = 4;
@@ -403,14 +406,8 @@ public class DefaultChunk implements Chunk {
                 index = palette.indexOf(block);
                 if (palette.size() > (1 << bitsPerBlock)) {
                     bitsPerBlock++;
-                    if (bitsPerBlock >= 9) {
-                        // ToDo: Investigate
-                        // Rumor has it that this is ceil(log2(globalPaletteSize))
-                        // Vanilla uses 13 here
-                        // But when I calculate log2(256 * 16) I get 12. So the equation is wrong or Vanilla allocates
-                        // 512 blocks.
-                        bitsPerBlock = 13;
-                    }
+                    if (bitsPerBlock >= 9)
+                        bitsPerBlock = Math.min(4, game.getBlockRegistry().getGlobalPaletteSize());
                 }
             }
 
