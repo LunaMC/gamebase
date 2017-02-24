@@ -16,9 +16,9 @@
 
 package io.lunamc.gamebase.entity;
 
-import io.lunamc.gamebase.world.FuzzyLocated;
+public interface EntityIdAllocator {
 
-public interface Entity extends FuzzyLocated {
+    int obtain();
 
-    int getEntityId();
+    void free(int id);
 }

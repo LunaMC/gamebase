@@ -20,8 +20,10 @@ import io.lunamc.common.host.VirtualHost;
 import io.lunamc.common.network.AuthorizedConnection;
 import io.lunamc.common.status.StatusProvider;
 import io.lunamc.gamebase.Game;
+import io.lunamc.gamebase.entity.EntityIdAllocator;
 import io.lunamc.gamebase.entity.Player;
 import io.lunamc.plugins.gamebase.block.DefaultBlockRegistry;
+import io.lunamc.plugins.gamebase.entity.DefaultEntityIdAllocator;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,10 +33,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class DefaultGame implements Game {
 
+    private final DefaultEntityIdAllocator entityIdAllocator = new DefaultEntityIdAllocator();
     private final DefaultBlockRegistry blockRegistry = new DefaultBlockRegistry();
     private final Set<Player> connections = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final Set<VirtualHost> handledVirtualHosts = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final AtomicReference<StatusProvider> statusProvider = new AtomicReference<>();
+
+    @Override
+    public EntityIdAllocator getEntityIdAllocator() {
+        return entityIdAllocator;
+    }
 
     @Override
     public DefaultBlockRegistry getBlockRegistry() {

@@ -20,11 +20,14 @@ import io.lunamc.common.host.VirtualHost;
 import io.lunamc.common.network.AuthorizedConnection;
 import io.lunamc.common.status.StatusProvider;
 import io.lunamc.gamebase.block.BlockRegistry;
+import io.lunamc.gamebase.entity.EntityIdAllocator;
 import io.lunamc.gamebase.entity.Player;
 
 import java.util.Collection;
 
 public interface Game {
+
+    EntityIdAllocator getEntityIdAllocator();
 
     BlockRegistry getBlockRegistry();
 

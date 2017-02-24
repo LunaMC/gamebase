@@ -18,6 +18,7 @@ package io.lunamc.plugins.gamebase;
 
 import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.block.Block;
+import io.lunamc.gamebase.entity.Player;
 import io.lunamc.gamebase.world.Chunk;
 import io.lunamc.gamebase.world.World;
 import io.lunamc.plugins.gamebase.world.DefaultWorld;
@@ -38,12 +39,14 @@ public class DefaultPlayHandler extends PacketInboundHandlerAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPlayHandler.class);
 
     private final Game game;
+    private final Player player;
     private final NettyAuthorizedConnection connection;
     private final World exampleWorld;
     private boolean send;
 
-    public DefaultPlayHandler(Game game, NettyAuthorizedConnection connection) {
+    public DefaultPlayHandler(Game game, Player player, NettyAuthorizedConnection connection) {
         this.game = Objects.requireNonNull(game, "game must not be null");
+        this.player = Objects.requireNonNull(player, "player must not be null");
         this.connection = Objects.requireNonNull(connection, "connection must not be null");
         this.exampleWorld = new DefaultWorld(game, new StaticWorldType(true));
 
@@ -109,12 +112,12 @@ public class DefaultPlayHandler extends PacketInboundHandlerAdapter {
         }
     }
 
-    private static void writeJoinGame(ChannelHandlerContext ctx) {
+    private void writeJoinGame(ChannelHandlerContext ctx) {
         ByteBuf out = ctx.alloc().buffer();
         // Write packet id of join game (0x23)
         ProtocolUtils.writeVarInt(out, 0x23);
         // Write entity id
-        out.writeInt(42);
+        out.writeInt(player.getEntityId());
         // Write game mode (0 = survival)
         out.writeByte(0);
         // Write dimension (0 = overworld)

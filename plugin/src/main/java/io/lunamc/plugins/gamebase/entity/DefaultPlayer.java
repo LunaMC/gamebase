@@ -30,10 +30,17 @@ public class DefaultPlayer implements Player {
 
     private final LocationHolder locationHolder = new LocationHolder();
     private final AuthorizedConnection authorizedConnection;
+    private final int entityId;
     private UUID uuid;
 
-    public DefaultPlayer(AuthorizedConnection authorizedConnection) {
+    public DefaultPlayer(int entityId, AuthorizedConnection authorizedConnection) {
+        this.entityId = entityId;
         this.authorizedConnection = authorizedConnection;
+    }
+
+    @Override
+    public int getEntityId() {
+        return entityId;
     }
 
     @Override

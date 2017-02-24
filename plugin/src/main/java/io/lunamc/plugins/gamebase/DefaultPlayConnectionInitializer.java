@@ -45,9 +45,9 @@ public class DefaultPlayConnectionInitializer implements PlayConnectionInitializ
             throw new UnsupportedOperationException("connect must be provided by luna-netty plugin");
         Game game = gameManager.requireInstance().getGameForVirtualHost(connection.getVirtualHost()).orElseThrow(UnassignableGameException::new);
         NettyAuthorizedConnection castedConnection = (NettyAuthorizedConnection) connection;
-        Player player = new DefaultPlayer(connection);
+        Player player = new DefaultPlayer(game.getEntityIdAllocator().obtain(), connection);
         game.getPlayers().add(player);
         castedConnection.channel().pipeline()
-                .replace(ProtocolLoginHandler.HANDLER_NAME, HANDLER_NAME, new DefaultPlayHandler(game, castedConnection));
+                .replace(ProtocolLoginHandler.HANDLER_NAME, HANDLER_NAME, new DefaultPlayHandler(game, player, castedConnection));
     }
 }
