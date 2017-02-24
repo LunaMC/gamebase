@@ -16,8 +16,6 @@
 
 package io.lunamc.plugins.gamebase.world;
 
-import gnu.trove.map.TShortShortMap;
-import gnu.trove.map.hash.TShortShortHashMap;
 import io.lunamc.common.network.Connection;
 import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.block.Block;
@@ -29,6 +27,8 @@ import io.lunamc.plugins.netty.network.NettyConnection;
 import io.lunamc.protocol.ProtocolUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import org.eclipse.collections.api.map.primitive.MutableShortShortMap;
+import org.eclipse.collections.impl.map.mutable.primitive.ShortShortHashMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,7 @@ public class DefaultChunk implements Chunk {
     private static final int PACKET_SIZE_BLOCK_CHANGE = 5 + 8 + 5;
 
     private final StampedLock lock = new StampedLock();
-    private final TShortShortMap data = new TShortShortHashMap(20_000);
+    private final MutableShortShortMap data = new ShortShortHashMap(20_000);
     private final ChunkSection[] chunkSections = new ChunkSection[CHUNK_SECTIONS];
     private final short[] blocksCounter = new short[CHUNK_SECTIONS];
     private final Set<NettyConnection> subscribers = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -149,7 +149,8 @@ public class DefaultChunk implements Chunk {
                             chunkSection = createChunkSection(chunkSectionIndex);
 
                         short index = chunkSection.getIndex(block);
-                        short previous = data.put(key, index);
+                        short previous = data.get(key);
+                        data.put(key, index);
                         changed = previous != index;
                         if (changed)
                             blocksCounter[chunkSectionIndex]++;

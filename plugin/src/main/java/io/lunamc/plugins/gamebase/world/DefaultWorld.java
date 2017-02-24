@@ -16,12 +16,12 @@
 
 package io.lunamc.plugins.gamebase.world;
 
-import gnu.trove.map.TLongObjectMap;
-import gnu.trove.map.hash.TLongObjectHashMap;
 import io.lunamc.gamebase.Game;
 import io.lunamc.gamebase.world.Chunk;
 import io.lunamc.gamebase.world.World;
 import io.lunamc.gamebase.world.WorldType;
+import org.eclipse.collections.api.map.primitive.MutableLongObjectMap;
+import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 
 import java.util.Objects;
 import java.util.concurrent.locks.StampedLock;
@@ -29,7 +29,7 @@ import java.util.concurrent.locks.StampedLock;
 public class DefaultWorld implements World {
 
     private final StampedLock chunksLock = new StampedLock();
-    private final TLongObjectMap<Chunk> chunks = new TLongObjectHashMap<>();
+    private final MutableLongObjectMap<Chunk> chunks = new LongObjectHashMap<>();
     private final Game game;
     private final WorldType worldType;
 
