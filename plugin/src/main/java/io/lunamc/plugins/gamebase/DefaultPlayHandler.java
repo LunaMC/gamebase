@@ -17,12 +17,8 @@
 package io.lunamc.plugins.gamebase;
 
 import io.lunamc.gamebase.Game;
-import io.lunamc.gamebase.block.Block;
 import io.lunamc.gamebase.entity.Player;
-import io.lunamc.gamebase.world.Chunk;
 import io.lunamc.gamebase.world.World;
-import io.lunamc.plugins.gamebase.world.DefaultWorld;
-import io.lunamc.plugins.gamebase.world.StaticWorldType;
 import io.lunamc.plugins.netty.network.NettyAuthorizedConnection;
 import io.lunamc.protocol.ChannelHandlerContextUtils;
 import io.lunamc.protocol.ProtocolUtils;
@@ -41,25 +37,13 @@ public class DefaultPlayHandler extends PacketInboundHandlerAdapter {
     private final Game game;
     private final Player player;
     private final NettyAuthorizedConnection connection;
-    private final World exampleWorld;
     private boolean send;
 
     public DefaultPlayHandler(Game game, Player player, NettyAuthorizedConnection connection) {
         this.game = Objects.requireNonNull(game, "game must not be null");
         this.player = Objects.requireNonNull(player, "player must not be null");
         this.connection = Objects.requireNonNull(connection, "connection must not be null");
-        this.exampleWorld = new DefaultWorld(game, new StaticWorldType(true));
 
-        Block block = game.getBlockRegistry().getBlockByName("minecraft:stone").orElseThrow(RuntimeException::new);
-        for (int chunkX = -3; chunkX <= 3; chunkX++) {
-            for (int chunkZ = -3; chunkZ <= 3; chunkZ++) {
-                Chunk chunk = exampleWorld.requireChunk(chunkX, chunkZ);
-                for (int x = 0; x < Chunk.CHUNK_DIMENSION; x++) {
-                    for (int z = 0; z < Chunk.CHUNK_DIMENSION; z++)
-                        chunk.setBlockInChunk(x, 64, z, block);
-                }
-            }
-        }
     }
 
     @Override
@@ -104,10 +88,10 @@ public class DefaultPlayHandler extends PacketInboundHandlerAdapter {
     private void handlePlayerPositionAndLook() {
         if (!send) {
             send = true;
+            World world = player.getLocation().orElseThrow(RuntimeException::new).getWorld();
             for (int chunkX = -3; chunkX <= 3; chunkX++) {
-                for (int chunkZ = -3; chunkZ <= 3; chunkZ++) {
-                    exampleWorld.requireChunk(chunkX, chunkZ).sendChunkData(connection);
-                }
+                for (int chunkZ = -3; chunkZ <= 3; chunkZ++)
+                    world.requireChunk(chunkX, chunkZ).sendChunkData(connection);
             }
         }
     }

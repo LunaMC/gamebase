@@ -19,16 +19,15 @@ package io.lunamc.plugins.gamebase.entity;
 import io.lunamc.common.network.AuthorizedConnection;
 import io.lunamc.common.utils.UuidUtils;
 import io.lunamc.gamebase.entity.Player;
-import io.lunamc.gamebase.math.vector.Vector3f;
-import io.lunamc.gamebase.world.World;
+import io.lunamc.gamebase.world.MutableFuzzyLocation;
+import io.lunamc.plugins.gamebase.world.DefaultMutableFuzzyLocation;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.locks.StampedLock;
 
 public class DefaultPlayer implements Player {
 
-    private final LocationHolder locationHolder = new LocationHolder();
+    private final DefaultMutableFuzzyLocation location = new DefaultMutableFuzzyLocation();
     private final AuthorizedConnection authorizedConnection;
     private final int entityId;
     private UUID uuid;
@@ -44,18 +43,13 @@ public class DefaultPlayer implements Player {
     }
 
     @Override
-    public Optional<World> getWorld() {
-        return locationHolder.getWorld();
+    public Optional<MutableFuzzyLocation> getLocation() {
+        return location.isAvailable() ? Optional.of(location) : Optional.empty();
     }
 
     @Override
-    public Optional<Vector3f> getPosition() {
-        return locationHolder.getPosition();
-    }
-
-    @Override
-    public LocationUpdater getLocationUpdater() {
-        return locationHolder;
+    public MutableFuzzyLocation unsafeGetLocation() {
+        return location;
     }
 
     @Override
@@ -73,41 +67,5 @@ public class DefaultPlayer implements Player {
     @Override
     public String getUsername() {
         return getConnection().getProfile().getName();
-    }
-
-    private class LocationHolder implements LocationUpdater {
-
-        private final StampedLock lock = new StampedLock();
-        private World world;
-        private Vector3f position;
-
-        private Optional<World> getWorld() {
-            long stamp = lock.readLock();
-            try {
-                return Optional.ofNullable(world);
-            } finally {
-                lock.unlockRead(stamp);
-            }
-        }
-
-        private Optional<Vector3f> getPosition() {
-            long stamp = lock.readLock();
-            try {
-                return Optional.ofNullable(position);
-            } finally {
-                lock.unlockRead(stamp);
-            }
-        }
-
-        @Override
-        public void update(World world, Vector3f position) {
-            long stamp = lock.writeLock();
-            try {
-                this.world = world;
-                this.position = position;
-            } finally {
-                lock.unlockWrite(stamp);
-            }
-        }
     }
 }

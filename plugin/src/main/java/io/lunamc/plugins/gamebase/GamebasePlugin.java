@@ -76,9 +76,10 @@ public class GamebasePlugin extends PluginAdapter {
                 GameManager gameManager = serviceRegistry.getService(GameManager.class).requireInstance();
                 VirtualHostManager virtualHostManager = serviceRegistry.getService(VirtualHostManager.class).requireInstance();
                 ServiceRegistration<ComponentBuilderFactory> componentBuilderFactory = serviceRegistry.getService(ComponentBuilderFactory.class);
+                ServiceRegistration<VectorFactory> vectorFactory = serviceRegistry.getService(VectorFactory.class);
                 config.getGames().forEach(game -> {
                     try {
-                        register(gameManager, virtualHostManager, componentBuilderFactory, game);
+                        register(gameManager, virtualHostManager, componentBuilderFactory, vectorFactory, game);
                     } catch (Throwable throwable) {
                         LOGGER.error("Error while registering game", throwable);
                     }
@@ -102,8 +103,12 @@ public class GamebasePlugin extends PluginAdapter {
         return null;
     }
 
-    private static void register(GameManager gameManager, VirtualHostManager virtualHostManager, ServiceRegistration<ComponentBuilderFactory> componentBuilderFactory, GamesConfiguration.Game source) {
-        Game game = new DefaultGame();
+    private static void register(GameManager gameManager,
+                                 VirtualHostManager virtualHostManager,
+                                 ServiceRegistration<ComponentBuilderFactory> componentBuilderFactory,
+                                 ServiceRegistration<VectorFactory> vectorFactory,
+                                 GamesConfiguration.Game source) {
+        Game game = new DefaultGame(vectorFactory);
 
         // Register virtual hosts
         Collection<VirtualHost> handledVirtualHosts = game.getHandledVirtualHosts();

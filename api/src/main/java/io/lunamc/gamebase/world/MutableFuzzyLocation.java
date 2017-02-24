@@ -18,18 +18,21 @@ package io.lunamc.gamebase.world;
 
 import io.lunamc.gamebase.math.vector.Vector3f;
 
-import java.util.Optional;
+import java.util.Objects;
 
-public interface FuzzyLocated {
-
-    Optional<World> getWorld();
-
-    Optional<Vector3f> getPosition();
+public interface MutableFuzzyLocation extends FuzzyLocation {
 
     LocationUpdater getLocationUpdater();
 
     interface LocationUpdater {
 
-        void update(World world, Vector3f position);
+        default void update(FuzzyLocation location) {
+            Objects.requireNonNull(location, "location must be not null");
+            update(location.getWorld(), location.getPosition(), location.getYaw(), location.getPitch());
+        }
+
+        void update(World world, Vector3f position, float yaw, float pitch);
+
+        void unset();
     }
 }

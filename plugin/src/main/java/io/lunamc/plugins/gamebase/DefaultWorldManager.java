@@ -14,17 +14,25 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase.entity;
+package io.lunamc.plugins.gamebase;
 
-import io.lunamc.gamebase.world.MutableFuzzyLocation;
+import io.lunamc.gamebase.WorldManager;
+import io.lunamc.gamebase.entity.Player;
+import io.lunamc.gamebase.world.FuzzyLocation;
+import io.lunamc.plugins.gamebase.utils.LazyHolder;
 
-import java.util.Optional;
+import java.util.Objects;
 
-public interface Entity {
+public class DefaultWorldManager implements WorldManager {
 
-    int getEntityId();
+    private final LazyHolder<FuzzyLocation> spawn;
 
-    Optional<MutableFuzzyLocation> getLocation();
+    public DefaultWorldManager(LazyHolder<FuzzyLocation> spawn) {
+        this.spawn = Objects.requireNonNull(spawn, "spawn must not be null");
+    }
 
-    MutableFuzzyLocation unsafeGetLocation();
+    @Override
+    public FuzzyLocation decideSpawnLocation(Player player) {
+        return spawn.getValue();
+    }
 }

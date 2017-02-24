@@ -14,17 +14,13 @@
  *    limitations under the License.
  */
 
-package io.lunamc.gamebase.entity;
+package io.lunamc.gamebase;
 
-import io.lunamc.gamebase.world.MutableFuzzyLocation;
+import io.lunamc.gamebase.entity.Player;
+import io.lunamc.gamebase.world.FuzzyLocation;
+import io.lunamc.gamebase.world.World;
 
-import java.util.Optional;
+public interface WorldManager {
 
-public interface Entity {
-
-    int getEntityId();
-
-    Optional<MutableFuzzyLocation> getLocation();
-
-    MutableFuzzyLocation unsafeGetLocation();
+    FuzzyLocation decideSpawnLocation(Player player);
 }

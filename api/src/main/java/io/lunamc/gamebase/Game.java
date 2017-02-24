@@ -31,6 +31,8 @@ public interface Game {
 
     BlockRegistry getBlockRegistry();
 
+    WorldManager getWorldManager();
+
     Collection<Player> getPlayers();
 
     Collection<VirtualHost> getHandledVirtualHosts();
